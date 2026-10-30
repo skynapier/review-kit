@@ -1,0 +1,9 @@
+{
+  "name": "review-kit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate-evidence": "bun scripts/validate-evidence.ts",
+    "test": "bun test"
+  }
+}
