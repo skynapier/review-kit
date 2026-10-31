@@ -11,13 +11,13 @@ AI agents produce more code than people can read, so review moves to agents and 
 
 - The change: `git diff` of the working tree, a branch range, or a `NN.patch` file the user names.
 - `REVIEW.md` at the repository root, plus any `REVIEW.md` in a parent directory of a changed file (those add checks for that path). A line consisting only of `@<path>` includes that file. When no REVIEW.md exists, say so in the report and review with CLAUDE.md / AGENTS.md only, treating every file as medium.
-- The evidence file next to the patch (`todo/workers/<task>/NN.evidence.md`; Lector uses `.lector/workers/<task>/`). Its format is `~/Desktop/projects/review-kit/templates/evidence.md`.
+- The evidence file next to the patch (`todo/workers/<task>/NN.evidence.md`; Lector uses `.lector/workers/<task>/`). Its format is `~/Desktop/projects/review-kit/templates/evidence.md`. The evidence file is optional: when it is missing the review still runs.
 - The repository's CLAUDE.md / AGENTS.md; a broken rule there is a finding.
 
 ## Steps
 
-1. Run `bun run --cwd ~/Desktop/projects/review-kit validate-evidence <evidence> --review <REVIEW.md> --patch <patch>` (omit flags whose file does not exist). If it exits 1, report its errors as the whole result and stop; do not review the code.
-2. Read the diff and the surrounding code it touches. Look only for correctness: wrong results, crashes, data loss or corruption, access to another tenant's or user's data, broken rollback, and each item under `Always check`. Skip everything under `Do not report`. No style, naming or refactoring findings beyond Nit.
+1. If the evidence file exists, run `bun run --cwd ~/Desktop/projects/review-kit validate-evidence <evidence> --review <REVIEW.md> --patch <patch>` (omit flags whose file does not exist). If it exits 1, report its errors as the whole result and stop; do not review the code. If there is no evidence file, do not run the validator. Take the changed files from the diff and compute the tier yourself with the same rules the validator uses: drop files matching a backticked path glob under `Do not report`; a file matching a `Tiers` high glob is high, else a low glob is low, else medium; the change takes the highest file tier. Without a REVIEW.md every file is medium. Continue with step 2.
+2. Read the diff and the surrounding code it touches. Look only for correctness: wrong results, crashes, data loss or corruption, access to another tenant's or user's data, broken rollback, and each item under `Always check`. Skip everything under `Do not report`. No style, naming or refactoring findings beyond Nit. When the change touches documentation, a statement that contradicts the code is Important (the doc lies); a deviation from the repository's documentation standard (for backend services, `~/Desktop/projects/plan-kit/standards/service-docs.md`) is a Nit.
 3. For each finding record `path:line`, the concrete input or scenario, and the wrong outcome. Classify it: Important (should be fixed before merging, using `What Important means here`), Nit (minor; at most the number in `Cap the nits`, default three), Pre-existing (a bug the change did not introduce).
 4. Drop findings you cannot tie to a concrete scenario.
 
@@ -30,7 +30,7 @@ AI agents produce more code than people can read, so review moves to agents and 
 ## Report
 
 - Markdown printed in the conversation, not written to a file.
-- First line exactly: `Tier: <tier> · Important <n> · Nit <n> · Pre-existing <n>`, then one line saying what the person should read for that tier: low = the evidence summary; medium = the evidence and these findings, the diff only where a finding points; high = the full diff line by line.
+- First line exactly: `Tier: <tier> · Important <n> · Nit <n> · Pre-existing <n>`, then one line saying what the person should read for that tier: low = the evidence summary; medium = the evidence and these findings, the diff only where a finding points; high = the full diff line by line. When there was no evidence file, add a line `No evidence: checks were not verified by this review.` right after those two lines.
 - Then sections `Important`, `Nit`, `Pre-existing`, `Make it a rule`, each omitted when empty. Each finding is one bullet: `path:line` — scenario → wrong outcome.
 - Language: write the report in the language the user's instructions set for replies; keep paths, identifiers and technical terms in English.
 

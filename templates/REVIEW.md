@@ -17,7 +17,7 @@ Report at most <number> Nits per review.
 ## Always check
 <!-- List the specific checks that must always pass. -->
 - <check that must always pass>
-- <check that must always pass>
+- A change to routes, states, invariants or calculations updates `docs/architecture.html`, following `~/Desktop/projects/plan-kit/standards/service-docs.md`
 
 ## Tiers
 <!-- Files matching no glob are medium; a change takes its highest file tier. -->

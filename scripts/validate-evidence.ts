@@ -286,6 +286,12 @@ if (import.meta.main) {
   }
 
   // 2.
+  for (const path of [evidencePath, reviewPath, patchPath]) {
+    if (path !== null && !(await Bun.file(path).exists())) {
+      console.error(`✗ file not found: ${path}`);
+      process.exit(1);
+    }
+  }
   const evidenceText = await Bun.file(evidencePath).text();
   const reviewText = reviewPath !== null ? await Bun.file(reviewPath).text() : undefined;
   const patchText = patchPath !== null ? await Bun.file(patchPath).text() : undefined;
