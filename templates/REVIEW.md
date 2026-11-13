@@ -18,6 +18,7 @@ Report at most <number> Nits per review.
 <!-- List the specific checks that must always pass. -->
 - <check that must always pass>
 - A change to routes, states, invariants or calculations updates `docs/architecture.html`, following `~/Desktop/projects/plan-kit/standards/service-docs.md`
+- Comments do not restate names: types get one summary line, members are documented only for meaning the name does not carry (units, ranges, defaults, null meaning), multi-step methods get a summary plus numbered steps with bare `// N.` body markers, and no `<param>`/`<returns>` repeats a name
 
 ## Tiers
 <!-- Files matching no glob are medium; a change takes its highest file tier. -->
