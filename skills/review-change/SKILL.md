@@ -1,6 +1,6 @@
 ---
 name: review-change
-description: Reviews a local diff or a codez patch for correctness bugs against the repository's REVIEW.md and the change's evidence file, and reports Important / Nit / Pre-existing findings with file:line. Use when asked to review a change, a patch, or a worker's output before it is accepted.
+description: Reviews a local diff or a codez patch for correctness bugs and unrequested scope against the repository's REVIEW.md and the change's evidence file, and reports Important / Nit / Pre-existing findings with file:line. Use when asked to review a change, a patch, or a worker's output before it is accepted.
 ---
 
 # Review a local change
@@ -13,13 +13,16 @@ AI agents produce more code than people can read, so review moves to agents and 
 - `REVIEW.md` at the repository root, plus any `REVIEW.md` in a parent directory of a changed file (those add checks for that path). A line consisting only of `@<path>` includes that file. When no REVIEW.md exists, say so in the report and review with CLAUDE.md / AGENTS.md only, treating every file as medium.
 - The evidence file next to the patch (`todo/workers/<task>/NN.evidence.md`; Lector uses `.lector/workers/<task>/`). Its format is `~/Desktop/projects/review-kit/templates/evidence.md`. The evidence file is optional: when it is missing the review still runs.
 - The repository's CLAUDE.md / AGENTS.md; a broken rule there is a finding.
+- The plan or confirmed design the change implements (the plan file the user or task names, such as `todo/<feature>-plan.html`) and the user's request in the conversation; these define what was asked.
+- For a change that touches UI, the shared ui-patterns skill (`~/Desktop/projects/plan-kit/skills/ui-patterns/SKILL.md`) and the UI patterns file the repository's AGENTS.md names.
 
 ## Steps
 
 1. If the evidence file exists, run `bun run --cwd ~/Desktop/projects/review-kit validate-evidence <evidence> --review <REVIEW.md> --patch <patch>` (omit flags whose file does not exist). If it exits 1, report its errors as the whole result and stop; do not review the code. If there is no evidence file, do not run the validator. Take the changed files from the diff and compute the tier yourself with the same rules the validator uses: drop files matching a backticked path glob under `Do not report`; a file matching a `Tiers` high glob is high, else a low glob is low, else medium; the change takes the highest file tier. Without a REVIEW.md every file is medium. Continue with step 2.
-2. Read the diff and the surrounding code it touches. Look only for correctness: wrong results, crashes, data loss or corruption, access to another tenant's or user's data, broken rollback, and each item under `Always check`. Skip everything under `Do not report`. No style, naming or refactoring findings beyond Nit. When the change touches documentation, a statement that contradicts the code is Important (the doc lies); a deviation from the repository's documentation standard (for backend services, `~/Desktop/projects/plan-kit/standards/service-docs.md`) is a Nit.
-3. For each finding record `path:line`, the concrete input or scenario, and the wrong outcome. Classify it: Important (should be fixed before merging, using `What Important means here`), Nit (minor; at most the number in `Cap the nits`, default three), Pre-existing (a bug the change did not introduce).
-4. Drop findings you cannot tie to a concrete scenario.
+2. Read the diff and the surrounding code it touches. Look only for correctness: wrong results, crashes, data loss or corruption, access to another tenant's or user's data, broken rollback, and each item under `Always check`. Skip everything under `Do not report`. No style, naming or refactoring findings beyond Nit. When the change touches documentation, a statement that contradicts the code is Important (the doc lies); a deviation from the repository's documentation standard (for backend services, `~/Desktop/projects/plan-kit/standards/service-docs.md`) is a Nit. When the change touches UI, behavior that breaks a rule in those UI patterns (for example a scroll-hidden bar that flickers on small direction changes, or reappears while a finger is still on the screen) is Important; a visual deviation from them is a Nit.
+3. Compare every addition in the diff with what was asked: each new rule, validation, guard, check, type, constant or constants class, parameter, configuration value, dependency and test must trace to a plan decision, the user's request, an `Always check` item or a bug the change fixes. An addition that traces to none of these is Important and its bullet starts with `Unrequested:`. It names the addition and says no decision asks for it; this counts as its concrete scenario. A duplicate of a check another layer or the producer already performs is Unrequested even when it is correct. When no plan or confirmed design is available, say so in the report and judge against the user's request only.
+4. For each finding record `path:line`, the concrete input or scenario, and the wrong outcome. Classify it: Important (should be fixed before merging, using `What Important means here`), Nit (minor; at most the number in `Cap the nits`, default three), Pre-existing (a bug the change did not introduce).
+5. Drop findings you cannot tie to a concrete scenario. Unrequested findings are tied to the missing decision instead.
 
 ## Rounds
 
