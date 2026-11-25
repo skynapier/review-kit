@@ -5,10 +5,12 @@ Shared review kit used by Claude Code and Codex across projects, so that a perso
 | Item | Use |
 | --- | --- |
 | [review-change](skills/review-change/SKILL.md) | Reviews a diff against REVIEW.md and evidence. |
+| [staged-merge](skills/staged-merge/SKILL.md) | Brings a reviewed change into the owner checkout one module and one feature at a time. |
 | [explain-code](skills/explain-code/SKILL.md) | Generates a throwaway explainer page for one slice of a codebase. |
 | [templates/REVIEW.md](templates/REVIEW.md) | Per-repository review instructions template. |
 | [templates/evidence.md](templates/evidence.md) | Evidence template for one delivered change. |
 | [scripts/validate-evidence.ts](scripts/validate-evidence.ts) | Checks an evidence file and computes the risk tier. |
+| [standards/python.md](standards/python.md) | Python review standard; a shared reference when reviewing Python changes. |
 
 ## Risk tiers
 
@@ -29,7 +31,7 @@ Shared review kit used by Claude Code and Codex across projects, so that a perso
 Link each skill into the agent skill directories:
 
 ```sh
-for skill in review-change explain-code; do
+for skill in review-change staged-merge explain-code; do
   ln -s ~/Desktop/projects/review-kit/skills/$skill ~/.claude/skills/$skill
   ln -s ~/Desktop/projects/review-kit/skills/$skill ~/.codex/skills/$skill
 done
